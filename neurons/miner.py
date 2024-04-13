@@ -60,6 +60,21 @@ import lib.utils
 import lib
 
 
+#set device function
+def set_device(device_number=0):
+    if torch.cuda.is_available():
+        try:
+            torch.cuda.set_device(device_number)
+            print(f"Running on: {torch.cuda.get_device_name(device_number)}")
+        except Exception as e:
+            print(f"Error: {e} - Running on: {torch.cuda.get_device_name(0)}")
+            torch.cuda.set_device(0)
+    else:
+        print("No GPU available, running on CPU.")
+
+# Call the function with the desired device number
+set_device(1)
+
 def get_config():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -90,11 +105,11 @@ def get_config():
         "--auto_update", type=str, default='yes', help="Auto update option for github repository updates."
     )
     parser.add_argument(
-        "--cuda_device", type=int, default=0, help="The cuda device to be used for the model."
+        "--cuda_device", type=int, default=1, help="The cuda device to be used for the model."
     )
 
     # Adds override arguments for network and netuid.
-    parser.add_argument("--netuid", type=int, default=1, help="The chain subnet uid.")
+    parser.add_argument("--netuid", type=int, default=31, help="The chain subnet uid.")
     bt.subtensor.add_args(parser)
     bt.logging.add_args(parser)
     bt.wallet.add_args(parser)
