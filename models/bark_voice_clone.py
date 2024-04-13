@@ -602,7 +602,7 @@ class CustomTokenizer(nn.Module):
 
         y_train_hot = torch.zeros(len(y_train), self.output_size)
         y_train_hot[range(len(y_train)), y_train] = 1
-        y_train_hot = y_train_hot.to('cuda:1')
+        y_train_hot = y_train_hot.to(ModelLoader.device)
 
         # Calculate the loss
         loss = lossfunc(y_pred, y_train_hot)
@@ -678,10 +678,10 @@ def auto_train(data_path, save_path='model.pth', load_model: str | None = None, 
 
     if load_model and os.path.isfile(load_model):
         print('Loading model from', load_model)
-        model_training = CustomTokenizer.load_from_checkpoint(load_model, 'cuda:1')
+        model_training = CustomTokenizer.load_from_checkpoint(load_model, ModelLoader.device)
     else:
         print('Creating new model.')
-        model_training = CustomTokenizer(version=1).to('cuda:1')  # Settings for the model to run without lstm
+        model_training = CustomTokenizer(version=1).to(ModelLoader.device)  # Settings for the model to run without lstm
     save_path = os.path.join(data_path, save_path)
     base_save_path = '.'.join(save_path.split('.')[:-1])
 
@@ -703,7 +703,7 @@ def auto_train(data_path, save_path='model.pth', load_model: str | None = None, 
         for i in range(save_epochs):
             j = 0
             for x, y in zip(data_x, data_y):
-                model_training.train_step(torch.tensor(x).to('cuda:1'), torch.tensor(y).to('cuda:1'), j % 50 == 0)  # Print loss every 50 steps
+                model_training.train_step(torch.tensor(x).to(ModelLoader.device), torch.tensor(y).to(ModelLoader.device), j % 50 == 0)  # Print loss every 50 steps
                 j += 1
         save_p = save_path
         save_p_2 = f'{base_save_path}_epoch_{epoch}.pth'
@@ -829,7 +829,7 @@ def _get_ckpt_path(model_type, use_small=False, path=None):
 
 def _grab_best_device(use_gpu=True):
     if torch.cuda.device_count() > 0 and use_gpu:
-        device = "cuda:1"
+        device = ModelLoader.device
     elif torch.backends.mps.is_available() and use_gpu and GLOBAL_ENABLE_MPS:
         device = "mps"
     else:
@@ -1582,9 +1582,9 @@ def codec_decode(fine_tokens):
 
 
 class ModelLoader:
-   def __init__(self, model_dir=None):
+   def __init__(self, model_dir=None, device=None):
         self.model_dir = model_dir
-        self.device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
+        self.device = device if torch.cuda.is_available() else 'cpu'
         self.model = self.load_codec_model()
         self.hubert_manager = self.load_hubert_manager()
         self.hubert_model = self.load_hubert_model()
@@ -1592,7 +1592,7 @@ class ModelLoader:
 
 
    def load_codec_model(self):
-       return load_codec_model(use_gpu=True if self.device == 'cuda:1' else False)
+       return load_codec_model(use_gpu=True if self.device == ModelLoader.device else False)
 
    def load_hubert_manager(self):
        hubert_manager = HuBERTManager()
@@ -1704,7 +1704,7 @@ class AudioGenerator:
 
 
 class BarkVoiceCloning:
-    def __init__(self, device='cuda:1'):
+    def __init__(self, device=ModelLoader.device):
         # Initialize the device for the class
         self.device = torch.device(device)
 

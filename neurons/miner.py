@@ -60,20 +60,20 @@ import lib.utils
 import lib
 
 
-#set device function
-def set_device(device_number=0):
-    if torch.cuda.is_available():
-        try:
-            torch.cuda.set_device(device_number)
-            print(f"Running on: {torch.cuda.get_device_name(device_number)}")
-        except Exception as e:
-            print(f"Error: {e} - Running on: {torch.cuda.get_device_name(0)}")
-            torch.cuda.set_device(0)
-    else:
-        print("No GPU available, running on CPU.")
+# #set device function
+# def set_device(device_number=0):
+#     if torch.cuda.is_available():
+#         try:
+#             torch.cuda.set_device(device_number)
+#             print(f"Running on: {torch.cuda.get_device_name(device_number)}")
+#         except Exception as e:
+#             print(f"Error: {e} - Running on: {torch.cuda.get_device_name(0)}")
+#             torch.cuda.set_device(0)
+#     else:
+#         print("No GPU available, running on CPU.")
 
-# Call the function with the desired device number
-set_device(1)
+# # Call the function with the desired device number
+# #set_device(1)
 
 def get_config():
     parser = argparse.ArgumentParser()
@@ -105,7 +105,7 @@ def get_config():
         "--auto_update", type=str, default='yes', help="Auto update option for github repository updates."
     )
     parser.add_argument(
-        "--cuda_device", type=int, default=1, help="The cuda device to be used for the model."
+        "--cuda_device", type=int, default=0, help="The cuda device to be used for the model."
     )
 
     # Adds override arguments for network and netuid.
@@ -197,7 +197,7 @@ def main(config):
             bt.logging.info(f"Checking the path of the model supplies: {config.bark_vc_path}")
             bt.logging.info(f"Using the Voice Clone with the supplied model: {config.clone_model}")
             bark_vc_model = config.bark_vc_path if config.bark_vc_path else None
-            voice_clone_model = ModelLoader(model_dir=bark_vc_model) 
+            voice_clone_model = ModelLoader(model_dir=bark_vc_model, device=device) 
         elif config.clone_model is not None and config.clone_model == "elevenlabs/eleven" and config.eleven_api is not None:
             bt.logging.info(f"Using the Voice Clone with the supplied model: {config.clone_model}")
             voice_clone_model = ElevenLabsClone(config.eleven_api)
