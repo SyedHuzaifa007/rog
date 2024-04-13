@@ -132,9 +132,9 @@ def get_config():
 
 
 def main(config):
-    #device = config.cuda_device
+    device = config.cuda_device
     # Device setup
-    device = torch.device(config.cuda_device if torch.cuda.is_available() else "cpu")
+    #device = torch.device(config.cuda_device if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     # Activating Bittensor's logging with the set configurations.
     bt.logging(config=config, logging_dir=config.full_path)
