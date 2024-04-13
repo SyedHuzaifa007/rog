@@ -1582,9 +1582,9 @@ def codec_decode(fine_tokens):
 
 
 class ModelLoader:
-   def __init__(self, model_dir=None, device=None):
+   def __init__(self, model_dir=None, device='cpu'):
         self.model_dir = model_dir
-        self.device = device if torch.cuda.is_available() else 'cpu'
+        self.device = torch.device(device)
         self.model = self.load_codec_model()
         self.hubert_manager = self.load_hubert_manager()
         self.hubert_model = self.load_hubert_model()
@@ -1704,7 +1704,7 @@ class AudioGenerator:
 
 
 class BarkVoiceCloning:
-    def __init__(self, device=ModelLoader.device):
+    def __init__(self, device):
         # Initialize the device for the class
         self.device = torch.device(device)
 
